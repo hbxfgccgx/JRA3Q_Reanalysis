@@ -103,13 +103,72 @@ Below is the list of variable codes used in the script `DownLoad_JRA3Q_fcst_phy2
 | 0_194_30.fglu1have-sfc-fc-Ll125 | Zonal momentum flux by long gravity wave | Zonal momentum flux by long gravity wave (N m^-2) |
 | 0_194_31.fglv1have-sfc-fc-Ll125 | Meridional momentum flux by long gravity wave | Meridional momentum flux by long gravity wave (N m^-2) |
 
+## DownLoad_JRA3Q_Specified_Range.py
+- Download JRA-3Q data for a **user-specified time range** and **variable selection**, with optional parallel downloads and a configurable output directory.
+- Supports datasets: `anl_p125`, `anl_surf125`, `fcst_phy2m125`.
+
+### Usage
+
+```bash
+# List available variables for the pressure-level dataset:
+python DownLoad_JRA3Q_Specified_Range.py --dataset anl_p125 --list-vars
+
+# Download temperature (tmp) for January–December 2000:
+python DownLoad_JRA3Q_Specified_Range.py --dataset anl_p125 --vars tmp \
+    --start-year 2000 --end-year 2000
+
+# Download temperature and specific humidity for 2010–2020, saved to ./data/:
+python DownLoad_JRA3Q_Specified_Range.py --dataset anl_p125 --vars tmp spfh \
+    --start-year 2010 --end-year 2020 --output-dir ./data
+
+# Download surface temperature for June–August 1980:
+python DownLoad_JRA3Q_Specified_Range.py --dataset anl_surf125 --vars tmp2m \
+    --start-year 1980 --start-month 6 --end-year 1980 --end-month 8
+```
+
+### Command-line options
+
+| Option | Default | Description |
+|---|---|---|
+| `--dataset` | `anl_p125` | Dataset type: `anl_p125`, `anl_surf125`, or `fcst_phy2m125` |
+| `--vars VAR [VAR ...]` | *(required)* | Short variable name(s) to download. Use `--list-vars` to see all options. |
+| `--start-year` | `1948` | Start year (inclusive) |
+| `--end-year` | `2023` | End year (inclusive) |
+| `--start-month` | `1` | Start month 1–12 (inclusive) |
+| `--end-month` | `12` | End month 1–12 (inclusive) |
+| `--output-dir` | `.` | Directory to save downloaded files |
+| `--workers` | `4` | Number of parallel download workers |
+| `--list-vars` | — | Print available variable names for the selected dataset and exit |
+
+### Extracting a geographic sub-region
+
+The downloaded NetCDF files are global (1.25° × 1.25°). To extract a specific region after downloading, use [CDO](https://code.mpimet.mpg.de/projects/cdo) or Python/xarray:
+
+```python
+import xarray as xr
+import glob
+
+files = sorted(glob.glob("jra3q.anl_p125.0_0_0.tmp-pres-an-ll125.*.nc"))
+ds = xr.open_mfdataset(files, combine="by_coords")
+
+# Select a region: e.g. the Western Pacific (0°–60°N, 100°–180°E)
+region = ds.sel(latitude=slice(60, 0), longitude=slice(100, 180))
+region.to_netcdf("tmp_western_pacific.nc")
+```
+
+> **Note:** JRA-3Q is an *atmospheric* reanalysis and provides pressure-level
+> temperature (tmp), specific humidity, wind fields, etc. It does not contain
+> ocean-interior temperature or salinity profiles. For full-ocean-depth
+> temperature and salinity analysis, consider ocean reanalysis products such as
+> [EN4](https://www.metoffice.gov.uk/hadobs/en4/), [GLORYS12](https://data.marine.copernicus.eu/), or [SODA](https://www.atmos.umd.edu/~ocean/).
+
 ## Data Resolution
 - grid: 1.25° x 1.25° from 0E to 358.75E and 90N to 90S (288 x 145 Longitude/Latitude)
 - time: 3 hour
 - level(p125): 45(0.01 to 1000 hPa) isobaric analysis fields
 - level(surf125): 1 (Ground or water surface) or (Nominal top of the atmosphere)
   
-### Uasage example
+### Usage example
 ```bash
 bash DownLoad_JRA3Q_anl_surf125.sh
 ```
