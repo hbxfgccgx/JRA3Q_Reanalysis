@@ -2,30 +2,54 @@
 
 opts="-N"
 cert_opt="--no-check-certificate"
-# If you get a certificate verification error, uncomment the following line:
-# cert_opt="--no-check-certificate"
 
-# Loop through the years and months
-for year in {1970..2023}; do
-    for month in {01..12}; do
+# ============================================================
+# Configurable time range
+# Modify START_YEAR, END_YEAR, START_MONTH, END_MONTH to
+# download data for a specific time span.
+# Valid range: 1947-09 to present (1948-2023 for full years).
+# ============================================================
+START_YEAR=1970
+END_YEAR=2023
+START_MONTH=01
+END_MONTH=12
+
+# ============================================================
+# Configurable variable selection
+# Comment out any variables you do not need to save time and
+# disk space.
+# ============================================================
+ALL_VARIABLES=(
+    "0_0_22.ttswr6have-pres-fc-ll125"
+    "0_0_23.ttlwr6have-pres-fc-ll125"
+    "0_194_1.adhr6have-pres-fc-ll125"
+    "0_194_12.admr6have-pres-fc-ll125"
+    "0_194_13.lrgmr6have-pres-fc-ll125"
+    "0_194_14.cnvmr6have-pres-fc-ll125"
+    "0_194_15.vdfmr6have-pres-fc-ll125"
+    "0_194_18.adua6have-pres-fc-ll125"
+    "0_194_19.adva6have-pres-fc-ll125"
+    "0_194_2.lrghr6have-pres-fc-ll125"
+    "0_194_20.cnvua6have-pres-fc-ll125"
+    "0_194_21.cnvva6have-pres-fc-ll125"
+    "0_194_22.vdfua6have-pres-fc-ll125"
+    "0_194_23.vdfva6have-pres-fc-ll125"
+    "0_194_24.gwdoua6have-pres-fc-ll125"
+    "0_194_25.gwdova6have-pres-fc-ll125"
+    "0_194_26.gwdnua6have-pres-fc-ll125"
+    "0_194_27.gwdnva6have-pres-fc-ll125"
+    "0_194_3.cnvhr6have-pres-fc-ll125"
+    "0_194_4.vdfhr6have-pres-fc-ll125"
+    "0_3_27.umflx6have-pres-fc-ll125"
+)
+
+# Loop through the specified years
+for year in $(seq "$START_YEAR" "$END_YEAR"); do
+    # Loop through each month within the specified range
+    for month in $(seq -w "$START_MONTH" "$END_MONTH"); do
         # Construct the month_year string used in the base URL
         month_year="${year}${month}"
-        base_url=https://osdf-director.osg-htc.org/ncar/gdex/d640000/fcst_phyp125/${month_year}"
-
-        # Define all variable codes and their respective GRIB variable names
-        variables=(
-            "0_0_22.ttswr6have-pres-fc-ll125" "0_0_23.ttlwr6have-pres-fc-ll125"
-            "0_194_1.adhr6have-pres-fc-ll125" "0_194_12.admr6have-pres-fc-ll125"
-            "0_194_13.lrgmr6have-pres-fc-ll125" "0_194_14.cnvmr6have-pres-fc-ll125"
-            "0_194_15.vdfmr6have-pres-fc-ll125" "0_194_18.adua6have-pres-fc-ll125"
-            "0_194_19.adva6have-pres-fc-ll125" "0_194_2.lrghr6have-pres-fc-ll125"
-            "0_194_20.cnvua6have-pres-fc-ll125" "0_194_21.cnvva6have-pres-fc-ll125"
-            "0_194_22.vdfua6have-pres-fc-ll125" "0_194_23.vdfva6have-pres-fc-ll125"
-            "0_194_24.gwdoua6have-pres-fc-ll125" "0_194_25.gwdova6have-pres-fc-ll125"
-            "0_194_26.gwdnua6have-pres-fc-ll125" "0_194_27.gwdnva6have-pres-fc-ll125"
-            "0_194_3.cnvhr6have-pres-fc-ll125" "0_194_4.vdfhr6have-pres-fc-ll125"
-            "0_3_27.umflx6have-pres-fc-ll125"
-        )
+        base_url="https://osdf-director.osg-htc.org/ncar/gdex/d640000/fcst_phyp125/${month_year}"
 
         # Determine the last day of the month to handle February and leap years
         if [ "$month" == "02" ]; then
@@ -47,7 +71,7 @@ for year in {1970..2023}; do
         second_segment_end="${year}${month}${last_day}18"
 
         # Loop through each variable code
-        for var in "${variables[@]}"; do
+        for var in "${ALL_VARIABLES[@]}"; do
             # Construct file names for both segments
             first_file_name="jra3q.fcst_phyp125.${var}.${first_segment_start}_${first_segment_end}.nc"
             second_file_name="jra3q.fcst_phyp125.${var}.${second_segment_start}_${second_segment_end}.nc"

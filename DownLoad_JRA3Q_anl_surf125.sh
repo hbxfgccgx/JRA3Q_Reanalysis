@@ -3,27 +3,47 @@
 opts="-N"
 cert_opt="--no-check-certificate"
 
-# Loop through the years 1948 to 1978
-for year in {1948..2023}
+# ============================================================
+# Configurable time range
+# Modify START_YEAR, END_YEAR, START_MONTH, END_MONTH to
+# download data for a specific time span.
+# Valid range: 1947-09 to present (1948-2023 for full years).
+# ============================================================
+START_YEAR=1948
+END_YEAR=2023
+START_MONTH=01
+END_MONTH=12
+
+# ============================================================
+# Configurable variable selection
+# Comment out any variables you do not need to save time and
+# disk space.
+# ============================================================
+ALL_VARIABLES=(
+    "0_0_0.tmp2m-hgt-an-ll125"
+    "0_0_2.pot-sfc-an-ll125"
+    "0_0_7.depr2m-hgt-an-ll125"
+    "0_194_6.snleng-sfc-an-ll125"
+    "0_194_7.snlh2o-sfc-an-ll125"
+    "0_1_0.spfh2m-hgt-an-ll125"
+    "0_1_1.rh2m-hgt-an-ll125"
+    "0_1_13.weasd-sfc-an-ll125"
+    "0_1_64.tciwv-col-an-ll125"
+    "0_3_0.pres-sfc-an-ll125"
+    "0_2_3.vgrd10m-hgt-an-ll125"
+    "0_2_2.ugrd10m-hgt-an-ll125"
+    "0_3_1.prmsl-msl-an-ll125"
+)
+
+# Loop through the specified years
+for year in $(seq "$START_YEAR" "$END_YEAR")
 do
-    # Loop through each month
-    for month in {01..12}
+    # Loop through each month within the specified range
+    for month in $(seq -w "$START_MONTH" "$END_MONTH")
     do
         # Construct the month_year string used in the base URL
         month_year="${year}${month}"
         base_url="https://osdf-director.osg-htc.org/ncar/gdex/d640000/anl_surf125/${month_year}"
-
-        # Define all variable codes and their respective GRIB variable names
-        variables=(
-            "0_0_0.tmp2m-hgt-an-ll125" "0_0_2.pot-sfc-an-ll125" \
-            "0_0_7.depr2m-hgt-an-ll125" "0_194_6.snleng-sfc-an-ll125" \
-            "0_194_7.snlh2o-sfc-an-ll125" "0_1_0.spfh2m-hgt-an-ll125" \
-            "0_1_1.rh2m-hgt-an-ll125" "0_1_13.weasd-sfc-an-ll125" \
-            "0_1_64.tciwv-col-an-ll125" \
-            "0_3_0.pres-sfc-an-ll125" \
-            "0_2_3.vgrd10m-hgt-an-ll125" "0_2_2.ugrd10m-hgt-an-ll125" \
-            "0_3_1.prmsl-msl-an-ll125"
-        )
 
         # Determine the end day of the month to handle February and leap years
         if [ "$month" == "02" ]; then
@@ -39,7 +59,7 @@ do
         fi
 
         # Loop through each variable code
-        for var in "${variables[@]}"
+        for var in "${ALL_VARIABLES[@]}"
         do
             start_time="${year}${month}0100"
             end_time="${year}${month}${end_day}18"

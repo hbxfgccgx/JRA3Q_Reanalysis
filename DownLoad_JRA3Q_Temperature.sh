@@ -1,39 +1,47 @@
 #!/bin/bash
+# ============================================================
+# DownLoad_JRA3Q_Temperature.sh
+#
+# Downloads JRA-3Q 1.25° isobaric analysis temperature data
+# (anl_p125) for a user-defined time span.
+#
+# JRA-3Q provides atmospheric temperature at 45 pressure levels
+# (0.01–1000 hPa), which enables vertical profile analysis
+# across the entire atmospheric column.
+#
+# After downloading, run Subset_Region.py to extract a specific
+# geographic bounding box from the global files.
+# ============================================================
 
 opts="-N"
 cert_opt="--no-check-certificate"
 
 # ============================================================
 # Configurable time range
-# Modify START_YEAR, END_YEAR, START_MONTH, END_MONTH to
-# download data for a specific time span.
+# Modify the four variables below to select your time span.
 # Valid range: 1947-09 to present (1948-2023 for full years).
+# Example: START_YEAR=1990 END_YEAR=2000 for 1990-2000 data.
 # ============================================================
-START_YEAR=1948
-END_YEAR=2023
+START_YEAR=1990
+END_YEAR=2020
 START_MONTH=01
 END_MONTH=12
 
 # ============================================================
-# Configurable variable selection
-# Comment out any variables you do not need to save time and
-# disk space.  Temperature (0_0_0.tmp) is listed first as it
-# is the primary variable for temperature analysis.
+# Variable to download
+# 0_0_0.tmp-pres-an-ll125 : Temperature at pressure levels (K)
+# To also download specific humidity uncomment the second line.
 # ============================================================
-ALL_VARIABLES=(
+VARIABLES=(
     "0_0_0.tmp-pres-an-ll125"
-    "0_1_0.spfh-pres-an-ll125"
-    "0_1_1.rh-pres-an-ll125"
-    "0_2_2.ugrd-pres-an-ll125"
-    "0_2_3.vgrd-pres-an-ll125"
-    "0_2_8.vvel-pres-an-ll125"
-    "0_3_5.hgt-pres-an-ll125"
-    "0_0_7.depr-pres-an-ll125"
-    "0_2_12.relv-pres-an-ll125"
-    "0_2_13.reld-pres-an-ll125"
-    "0_2_4.strm-pres-an-ll125"
-    "0_2_5.vpot-pres-an-ll125"
+    # "0_1_0.spfh-pres-an-ll125"   # Specific humidity (optional)
 )
+
+echo "============================================================"
+echo " JRA-3Q Pressure-Level Temperature Download"
+echo " Period : ${START_YEAR}-${START_MONTH} to ${END_YEAR}-${END_MONTH}"
+echo " Variables : ${VARIABLES[*]}"
+echo "============================================================"
 
 # Loop through the specified years
 for year in $(seq "$START_YEAR" "$END_YEAR")
@@ -57,9 +65,9 @@ do
         else
             end_day="31"
         fi
-        
+
         # Loop through each variable code
-        for var in "${ALL_VARIABLES[@]}"
+        for var in "${VARIABLES[@]}"
         do
             start_time="${year}${month}0100"
             end_time="${year}${month}${end_day}18"
@@ -70,9 +78,14 @@ do
                 echo "File $file_name already exists and is not empty. Skipping download."
             else
                 echo "Downloading $file_name..."
-                # Download the file
-                wget $cert_opt $opts $base_url/$file_name
+                wget $cert_opt $opts "$base_url/$file_name"
             fi
         done
     done
 done
+
+echo "============================================================"
+echo " Download complete."
+echo " To subset the files to a specific geographic region, run:"
+echo "   python Subset_Region.py"
+echo "============================================================"
