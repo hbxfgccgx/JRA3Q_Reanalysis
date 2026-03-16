@@ -3,8 +3,96 @@
 
 - JMA is currently conducting the Japanese Reanalysis for Three Quarters of a Century (JRA-3Q), which covers the period from September 1947 onward to extend the current period of data coverage and improve the quality of long-term reanalysis. The project involves a sophisticated data assimilation system (based on the operational set-up as of December 2018) incorporating development results from the operational NWP system and sea surface temperature analysis achieved since JRA-55 (based on the operational set-up as of December 2009). New datasets of past observations are also assimilated, including rescued historical observations and reprocessed satellite data supplied by meteorological and satellite centers worldwide. Many of the deficiencies of JRA-55 are alleviated in JRA-3Q, providing a high-quality homogeneous reanalysis dataset that covers the previous 75 years.
 
+## Quick Start: Download Data for a Specific Time Range and Region
+
+To download JRA-3Q temperature data for a **specific time span** and then subset it to a **specific geographic region**:
+
+### Step 1 – Set the time range and download
+
+Open `DownLoad_JRA3Q_Temperature.sh` and edit the four variables at the top:
+
+```bash
+START_YEAR=1990   # first year to download
+END_YEAR=2000     # last year to download
+START_MONTH=01    # first month (01 = January)
+END_MONTH=12      # last month  (12 = December)
+```
+
+Then run:
+
+```bash
+bash DownLoad_JRA3Q_Temperature.sh
+```
+
+This downloads only the **pressure-level temperature** variable (`0_0_0.tmp-pres-an-ll125`) at 45 pressure levels (0.01–1000 hPa) for the chosen period — one NetCDF file per month.
+
+### Step 2 – Subset to your region of interest
+
+Open `Subset_Region.py` and set your bounding box:
+
+```python
+LON_MIN = 100.0   # western boundary  (degrees East,  0–360)
+LON_MAX = 180.0   # eastern boundary
+LAT_MIN = -60.0   # southern boundary (degrees North, -90 to 90)
+LAT_MAX =  60.0   # northern boundary
+```
+
+Then run:
+
+```bash
+python Subset_Region.py
+```
+
+Subsetted files are saved to the `subset_output/` directory by default.
+
+> **Note on salinity:** JRA-3Q is an **atmospheric** reanalysis product and does not include ocean variables such as salinity or ocean temperature.  
+> For full-depth ocean temperature and salinity analysis, consider coupling JRA-3Q atmospheric forcing fields with an ocean reanalysis product (e.g., EN4, GLORYS, SODA, or NCEI World Ocean Atlas).
+
+---
+
+## DownLoad_JRA3Q_Temperature.sh (new)
+
+Downloads only the pressure-level temperature field for a configurable time span. Ideal as a starting point for atmospheric temperature profile analysis.
+
+### Configurable parameters
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `START_YEAR` | First year to download | `1990` |
+| `END_YEAR` | Last year to download | `2020` |
+| `START_MONTH` | First month (01–12) | `01` |
+| `END_MONTH` | Last month (01–12) | `12` |
+
+---
+
+## Subset_Region.py (new)
+
+Subsets any downloaded JRA-3Q NetCDF files to a user-defined geographic bounding box.
+
+### Configurable parameters
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `LON_MIN` / `LON_MAX` | Longitude range (0–360 °E) | `100` / `180` |
+| `LAT_MIN` / `LAT_MAX` | Latitude range (−90–90 °N) | `−60` / `60` |
+| `INPUT_DIR` | Directory with downloaded `.nc` files | `.` (current dir) |
+| `OUTPUT_DIR` | Directory for subsetted output files | `subset_output` |
+| `FILE_PATTERN` | Glob pattern to select files | temperature files |
+
+### Requirements
+
+```bash
+pip install xarray netCDF4
+```
+
+---
+
 ## DownLoad_JRA3Q_anl125_Pressure_Level.sh
 - download JRA-3Q 1.25 degree isobaric analysis fields (anl_p125)
+
+### Configurable parameters
+
+Edit `START_YEAR`, `END_YEAR`, `START_MONTH`, and `END_MONTH` at the top of the script to restrict the download to a specific time span. Individual variables in the `ALL_VARIABLES` array can be commented out to skip variables that are not needed.
 
 Below is the list of variable codes used in the script `DownLoad_JRA3Q_anl125_Pressure_Level.sh`, along with their respective variable names
 
@@ -26,8 +114,13 @@ Below is the list of variable codes used in the script `DownLoad_JRA3Q_anl125_Pr
 
 
 **Note:** The saturated vapor pressure used to calculate dewpoint depression (or deficit) and relative humidity from specific humidity is determined by the temperature.
+
 ## DownLoad_JRA3Q_anl_surf125.sh
 - download JRA-3Q 1.25 degree surface analysis fields (anl_surf125)
+
+### Configurable parameters
+
+Edit `START_YEAR`, `END_YEAR`, `START_MONTH`, and `END_MONTH` at the top of the script to restrict the download to a specific time span.
   
 Below is the list of variable codes used in the script `DownLoad_JRA3Q_anl_surf125.sh`, along with their respective variable names.
 
@@ -49,6 +142,10 @@ Below is the list of variable codes used in the script `DownLoad_JRA3Q_anl_surf1
 
 ## DownLoad_JRA3Q_fcst_phyp125.sh
 - download JRA-3Q 1.25 degree isobaric average diagnostic fields (fcst_phyp125)
+
+### Configurable parameters
+
+Edit `START_YEAR`, `END_YEAR`, `START_MONTH`, and `END_MONTH` at the top of the script to restrict the download to a specific time span.
 
 Below is the list of variable codes used in the script `DownLoad_JRA3Q_fcst_phyp125.sh`, along with their respective variable names.
 | Variable Code in Script              | Variable Name                         | Description(units)                                        |
@@ -75,6 +172,10 @@ Below is the list of variable codes used in the script `DownLoad_JRA3Q_fcst_phyp
 
 ## DownLoad_JRA3Q_fcst_phy2m125.sh
 - download JRA-3Q 1.25 degree two-dimensional average diagnostic fields (fcst_phy2m125)
+
+### Configurable parameters
+
+Edit `START_YEAR`, `END_YEAR`, `START_MONTH`, and `END_MONTH` at the top of the script to restrict the download to a specific time span.
   
 Below is the list of variable codes used in the script `DownLoad_JRA3Q_fcst_phy2m125.sh`, along with their respective variable names.
 | Variable Code in Script              | Variable Name                         | Description(units)                                        |
@@ -109,12 +210,23 @@ Below is the list of variable codes used in the script `DownLoad_JRA3Q_fcst_phy2
 - level(p125): 45(0.01 to 1000 hPa) isobaric analysis fields
 - level(surf125): 1 (Ground or water surface) or (Nominal top of the atmosphere)
   
-### Uasage example
+### Usage examples
+
 ```bash
-bash DownLoad_JRA3Q_anl_surf125.sh
+# Download all pressure-level variables for 1948–2023
+bash DownLoad_JRA3Q_anl125_Pressure_Level.sh
+
+# Download only temperature for a specific period (edit START_YEAR/END_YEAR first)
+bash DownLoad_JRA3Q_Temperature.sh
+
+# Subset downloaded files to a specific region (edit bounding box in script first)
+python Subset_Region.py
 ```
+
 ## Notice
 - The downloaded data covers the period from 1948 to 2023. To obtain data for the months of September to December in 1947 or from January 2024 to the present, you will need to modify the year loop in the shell (.sh) scripts accordingly.
+- All download scripts now support configurable `START_YEAR`, `END_YEAR`, `START_MONTH`, and `END_MONTH` variables at the top of each script.
 
 ## Contact Information
 - If you encounter any issues or bugs while downloading the data, please do not hesitate to contact me for assistance. My email address is: **suqianye2000@gmail.com**
+
