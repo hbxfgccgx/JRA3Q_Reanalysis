@@ -116,5 +116,56 @@ bash DownLoad_JRA3Q_anl_surf125.sh
 ## Notice
 - The downloaded data covers the period from 1948 to 2023. To obtain data for the months of September to December in 1947 or from January 2024 to the present, you will need to modify the year loop in the shell (.sh) scripts accordingly.
 
+## TEOS-10 海水声速计算 / Seawater Sound Speed (TEOS-10)
+
+`TEOS10_Sound_Speed.py` 基于国际热力学海洋方程（TEOS-10）实现海水声速计算，包含完整的公式推导与示例代码。
+
+### 原理 / Principle
+
+根据热力学基本关系，海水中声速 *c* 由等熵压缩率 κ_S 决定：
+
+$$c = \frac{1}{\sqrt{\rho \cdot \kappa_S}}$$
+
+利用 TEOS-10 的 Gibbs 函数 $g(S_A, T, p)$，声速可表达为：
+
+$$c = \sqrt{\frac{g_P}{\dfrac{g_{TP}^2}{g_{TT}} - g_{PP}}}$$
+
+其中下标表示对相应变量的偏导数：$g_P = \partial g/\partial p$（即比容 $v$），$g_{TT} = \partial^2 g/\partial T^2$，$g_{PP} = \partial^2 g/\partial p^2$，$g_{TP} = \partial^2 g/\partial T \partial p$。
+
+### 计算步骤 / Workflow
+
+1. **实用盐度 → 绝对盐度**：$S_A \approx S_P \times \frac{35.16504}{35} + \delta S_A$
+2. **原位温度 → 保守温度**：$CT = h_0(S_A, \theta) / C_{p0}$
+3. **计算声速**：调用 `gsw.sound_speed(SA, CT, p)`
+
+### 依赖 / Dependencies
+
+```bash
+pip install gsw numpy
+```
+
+### 使用示例 / Usage
+
+```python
+from TEOS10_Sound_Speed import TEOS10SoundSpeed
+import numpy as np
+
+calc = TEOS10SoundSpeed(lon=150.0, lat=20.0)
+
+# 输入：实用盐度 SP、原位温度 t、海压 p (dbar)
+SP = np.array([34.5, 35.0, 35.2])
+t  = np.array([28.0, 18.0,  8.0])
+p  = np.array([ 0.0,200.0,500.0])
+
+c = calc.sound_speed_from_SP_t(SP, t, p)
+print(c)  # 声速 (m/s)
+```
+
+直接运行演示：
+
+```bash
+python TEOS10_Sound_Speed.py
+```
+
 ## Contact Information
 - If you encounter any issues or bugs while downloading the data, please do not hesitate to contact me for assistance. My email address is: **suqianye2000@gmail.com**
